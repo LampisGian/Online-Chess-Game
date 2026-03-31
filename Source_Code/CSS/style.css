@@ -76,3 +76,40 @@ h1 {
     border-radius: 8px;
     cursor: pointer;
 }
+
+.game-layout {
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 30px;
+}
+
+.captured-box {
+    background-color: #2c2c2c;
+    padding: 15px;
+    border-radius: 10px;
+    width: 180px;
+    min-height: 640px;
+}
+
+.captured-box h3 {
+    color: white;
+    margin-bottom: 15px;
+    font-size: 24px;
+    text-align: center;
+}
+
+.captured-pieces {
+    color: white;
+    font-size: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+}
+
+.board-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

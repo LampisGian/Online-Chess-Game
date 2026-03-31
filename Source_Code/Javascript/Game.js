@@ -7,6 +7,8 @@ class Game
         this.selectedPiece = null;
         this.validMoves = [];
         this.gameOver = false;
+        this.capturedWhitePieces = [];
+        this.capturedBlackPieces = [];
 
         this.initializePieces();
     }
@@ -88,13 +90,23 @@ class Game
         return piece !== null && piece.color === color;
     }
 
-    movePiece(fromRow, fromCol, toRow, toCol) 
-    {
-        const piece = this.board[fromRow][fromCol];
-        this.board[toRow][toCol] = piece;
-        this.board[fromRow][fromCol] = null;
-        piece.setPosition(toRow, toCol);
+    movePiece(fromRow, fromCol, toRow, toCol, isSimulation = false) {
+    const piece = this.board[fromRow][fromCol];
+    const targetPiece = this.board[toRow][toCol];
+
+    if (targetPiece && !isSimulation) {
+        if (targetPiece.color === "white") {
+            this.capturedWhitePieces.push(targetPiece);
+        } else {
+            this.capturedBlackPieces.push(targetPiece);
+        }
     }
+
+    this.board[toRow][toCol] = piece;
+    this.board[fromRow][fromCol] = null;
+    piece.setPosition(toRow, toCol);
+    }
+
 
     switchTurn() 
     {
@@ -184,7 +196,7 @@ class Game
             this.board = this.cloneBoard();
 
             const clonedPiece = this.board[piece.row][piece.col];
-            this.movePiece(clonedPiece.row, clonedPiece.col, move.row, move.col);
+            this.movePiece(clonedPiece.row, clonedPiece.col, move.row, move.col, true);
 
             const stillInCheck = this.isKingInCheck(piece.color);
 
@@ -225,6 +237,9 @@ class Game
     this.validMoves = [];
     this.gameOver = false;
 
+    this.capturedWhitePieces = [];
+    this.capturedBlackPieces = [];
+
     this.initializePieces();
-}
+    }
 }

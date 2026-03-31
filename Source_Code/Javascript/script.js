@@ -1,12 +1,31 @@
 const chessboard = document.getElementById("chessboard");
 const game = new Game();
 const restartBtn = document.getElementById("restart-btn");
+const capturedWhiteContainer = document.getElementById("captured-white");
+const capturedBlackContainer = document.getElementById("captured-black");
 
 restartBtn.addEventListener("click", () => {
     game.resetGame();
     clearHighlights();
     updateBoard();
 });
+
+function renderCapturedPieces() {
+    capturedWhiteContainer.innerHTML = "";
+    capturedBlackContainer.innerHTML = "";
+
+    game.capturedWhitePieces.forEach(piece => {
+        const pieceElement = document.createElement("span");
+        pieceElement.textContent = piece.symbol;
+        capturedWhiteContainer.appendChild(pieceElement);
+    });
+
+    game.capturedBlackPieces.forEach(piece => {
+        const pieceElement = document.createElement("span");
+        pieceElement.textContent = piece.symbol;
+        capturedBlackContainer.appendChild(pieceElement);
+    });
+}
 
 function generateBoard() {
     chessboard.innerHTML = "";
@@ -102,6 +121,7 @@ function handleSquareClick(event) {
 function updateBoard() {
     clearHighlights();
     renderPieces();
+    renderCapturedPieces();
 }
 
 generateBoard();
