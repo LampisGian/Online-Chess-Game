@@ -49,3 +49,21 @@ h1 {
 .dark {
     background-color: #b58863;
 }
+
+.square {
+    width: 80px;
+    height: 80px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 48px;
+    cursor: pointer;
+}
+
+.highlight {
+    box-shadow: inset 0 0 0 4px yellow;
+}
+
+.selected {
+    box-shadow: inset 0 0 0 4px red;
+}
