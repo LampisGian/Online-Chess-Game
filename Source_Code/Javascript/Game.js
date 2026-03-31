@@ -217,4 +217,14 @@ class Game
     isCheckmate(color) {
         return this.isKingInCheck(color) && !this.hasAnyLegalMoves(color);
     }
+
+    resetGame() {
+    this.board = this.createEmptyBoard();
+    this.currentTurn = "white";
+    this.selectedPiece = null;
+    this.validMoves = [];
+    this.gameOver = false;
+
+    this.initializePieces();
+}
 }

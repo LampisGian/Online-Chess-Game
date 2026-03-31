@@ -1,5 +1,12 @@
 const chessboard = document.getElementById("chessboard");
 const game = new Game();
+const restartBtn = document.getElementById("restart-btn");
+
+restartBtn.addEventListener("click", () => {
+    game.resetGame();
+    clearHighlights();
+    updateBoard();
+});
 
 function generateBoard() {
     chessboard.innerHTML = "";
