@@ -24,3 +24,9 @@ function generateBoard() {
 }
 
 generateBoard();
+
+const whiteKing = new King("white", 7, 4);
+const blackQueen = new Queen("black", 0, 3);
+
+console.log(whiteKing);
+console.log(blackQueen);
