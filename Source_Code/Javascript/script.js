@@ -6,22 +6,37 @@ const mainMenuBtn = document.getElementById("main-menu-btn");
 const playAgainBtn = document.getElementById("play-again-btn");
 const modalMenuBtn = document.getElementById("modal-menu-btn");
 
+const confirmRestartBtn = document.getElementById("confirm-restart-btn");
+const cancelRestartBtn = document.getElementById("cancel-restart-btn");
+
 const capturedWhiteContainer = document.getElementById("captured-white");
 const capturedBlackContainer = document.getElementById("captured-black");
 const moveHistoryContainer = document.getElementById("move-history");
 
 const checkmateModal = document.getElementById("checkmate-modal");
+const restartModal = document.getElementById("restart-modal");
+
 const checkmateTitle = document.getElementById("checkmate-title");
 const checkmateMessage = document.getElementById("checkmate-message");
+const winnerIcon = document.getElementById("winner-icon");
 
 const whitePanel = document.getElementById("white-panel");
 const blackPanel = document.getElementById("black-panel");
 
 restartBtn.addEventListener("click", () => {
-    game.resetGame();
+    restartModal.classList.remove("hidden");
+});
+
+confirmRestartBtn.addEventListener("click", () => {
+    restartModal.classList.add("hidden");
     checkmateModal.classList.add("hidden");
+    game.resetGame();
     clearHighlights();
     updateBoard();
+});
+
+cancelRestartBtn.addEventListener("click", () => {
+    restartModal.classList.add("hidden");
 });
 
 playAgainBtn.addEventListener("click", () => {
@@ -42,11 +57,28 @@ modalMenuBtn.addEventListener("click", () => {
 function renderMoveHistory() {
     moveHistoryContainer.innerHTML = "";
 
-    game.moveHistory.forEach((move, index) => {
-        const moveElement = document.createElement("div");
-        moveElement.textContent = `${index + 1}. ${move}`;
-        moveHistoryContainer.appendChild(moveElement);
-    });
+    for (let i = 0; i < game.moveHistory.length; i += 2) {
+        const row = document.createElement("div");
+        row.classList.add("history-row");
+
+        const moveNumber = document.createElement("span");
+        moveNumber.classList.add("history-move-number");
+        moveNumber.textContent = `${Math.floor(i / 2) + 1}.`;
+
+        const whiteMove = document.createElement("span");
+        whiteMove.classList.add("history-move");
+        whiteMove.textContent = game.moveHistory[i] || "";
+
+        const blackMove = document.createElement("span");
+        blackMove.classList.add("history-move");
+        blackMove.textContent = game.moveHistory[i + 1] || "";
+
+        row.appendChild(moveNumber);
+        row.appendChild(whiteMove);
+        row.appendChild(blackMove);
+
+        moveHistoryContainer.appendChild(row);
+    }
 }
 
 function renderTurnIndicator() {
@@ -65,19 +97,31 @@ function renderCapturedPieces() {
     capturedBlackContainer.innerHTML = "";
 
     game.capturedWhitePieces.forEach(piece => {
-        const img = document.createElement("img");
-        img.src = piece.image;
-        img.alt = piece.name;
-        img.classList.add("captured-piece-image");
-        capturedWhiteContainer.appendChild(img);
+        if (piece.image) {
+            const img = document.createElement("img");
+            img.src = piece.image;
+            img.alt = piece.name;
+            img.classList.add("captured-piece-image");
+            capturedWhiteContainer.appendChild(img);
+        } else {
+            const span = document.createElement("span");
+            span.textContent = piece.symbol;
+            capturedWhiteContainer.appendChild(span);
+        }
     });
 
     game.capturedBlackPieces.forEach(piece => {
-        const img = document.createElement("img");
-        img.src = piece.image;
-        img.alt = piece.name;
-        img.classList.add("captured-piece-image");
-        capturedBlackContainer.appendChild(img);
+        if (piece.image) {
+            const img = document.createElement("img");
+            img.src = piece.image;
+            img.alt = piece.name;
+            img.classList.add("captured-piece-image");
+            capturedBlackContainer.appendChild(img);
+        } else {
+            const span = document.createElement("span");
+            span.textContent = piece.symbol;
+            capturedBlackContainer.appendChild(span);
+        }
     });
 }
 
@@ -114,12 +158,38 @@ function renderPieces() {
 
             const piece = game.getPiece(row, col);
             if (piece) {
-                const img = document.createElement("img");
-                img.src = piece.image;
-                img.alt = piece.name;
-                img.classList.add("piece-image");
-                square.appendChild(img);
+                if (piece.image) {
+                    const img = document.createElement("img");
+                    img.src = piece.image;
+                    img.alt = piece.name;
+                    img.classList.add("piece-image");
+                    square.appendChild(img);
+                } else {
+                    square.textContent = piece.symbol;
+                }
             }
+        }
+    }
+}
+
+function renderCheckState() {
+    document.querySelectorAll(".square").forEach(square => {
+        square.classList.remove("king-in-check");
+    });
+
+    if (game.isKingInCheck("white")) {
+        const whiteKing = game.findKing("white");
+        if (whiteKing) {
+            const square = document.getElementById(`square-${whiteKing.row}-${whiteKing.col}`);
+            square.classList.add("king-in-check");
+        }
+    }
+
+    if (game.isKingInCheck("black")) {
+        const blackKing = game.findKing("black");
+        if (blackKing) {
+            const square = document.getElementById(`square-${blackKing.row}-${blackKing.col}`);
+            square.classList.add("king-in-check");
         }
     }
 }
@@ -164,6 +234,7 @@ function handleSquareClick(event) {
                 if (currentPlayer === "white") {
                     checkmateTitle.textContent = "Checkmate!";
                     checkmateMessage.textContent = "Black wins the game.";
+                    winnerIcon.textContent = "♛";
 
                     let blackWins = parseInt(sessionStorage.getItem("blackWins") || "0");
                     blackWins++;
@@ -171,6 +242,7 @@ function handleSquareClick(event) {
                 } else {
                     checkmateTitle.textContent = "Checkmate!";
                     checkmateMessage.textContent = "White wins the game.";
+                    winnerIcon.textContent = "♕";
 
                     let whiteWins = parseInt(sessionStorage.getItem("whiteWins") || "0");
                     whiteWins++;
@@ -204,6 +276,7 @@ function updateBoard() {
     renderCapturedPieces();
     renderMoveHistory();
     renderTurnIndicator();
+    renderCheckState();
 }
 
 generateBoard();

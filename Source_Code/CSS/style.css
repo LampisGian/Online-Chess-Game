@@ -9,13 +9,12 @@ body {
     padding: 18px;
     font-family: Arial, sans-serif;
     color: white;
-    background:
-        radial-gradient(circle at top, #1f2937 0%, #0f172a 55%, #020617 100%);
+    background: radial-gradient(circle at top, #1f2937 0%, #0f172a 55%, #020617 100%);
     overflow-x: auto;
 }
 
 .game-container {
-    width: fit-content;
+    width: max-content;
     margin: 0 auto;
     text-align: center;
 }
@@ -57,7 +56,7 @@ h1 {
     display: grid;
     grid-template-columns: 170px 720px 170px;
     align-items: start;
-    column-gap: 28px;
+    column-gap: 40px;
 }
 
 .side-column {
@@ -65,7 +64,7 @@ h1 {
 }
 
 .center-column {
-    width: 688px;
+    width: 720px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -73,7 +72,7 @@ h1 {
 }
 
 .board-section {
-    width: 688px;
+    width: 720px;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -94,7 +93,7 @@ h1 {
 
 .top-coords,
 .bottom-coords {
-    width: 640px;
+    width: 672px;
     display: grid;
     grid-template-columns: repeat(8, 1fr);
     color: #e2e8f0;
@@ -110,8 +109,8 @@ h1 {
 }
 
 .side-coords {
-    width: 16px;
-    height: 640px;
+    width: 18px;
+    height: 672px;
     display: grid;
     grid-template-rows: repeat(8, 1fr);
     color: #e2e8f0;
@@ -141,42 +140,42 @@ h1 {
 }
 
 .square {
-    width: 80px;
-    height: 80px;
+    width: 84px;
+    height: 84px;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
     cursor: pointer;
     user-select: none;
-    font-size: 48px;
 }
 
 .light {
-    background: #111827;
+    background: #f8f7ff;
 }
 
 .dark {
-    background: #6b21a8;
+    background: #a855f7;
 }
 
 .piece-image {
-    width: 72px;
-    height: 72px;
+    width: 76px;
+    height: 76px;
     object-fit: contain;
     pointer-events: none;
     user-select: none;
     filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
-    transition: transform 0.18s ease;
+    transition: transform 0.18s ease, filter 0.18s ease;
 }
 
 .square:hover .piece-image {
-    transform: scale(1.04);
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.18));
 }
 
 .panel-box {
     width: 170px;
-    min-height: 640px;
+    min-height: 672px;
     background: rgba(15, 23, 42, 0.82);
     border: 1px solid rgba(255, 255, 255, 0.08);
     padding: 12px;
@@ -188,7 +187,7 @@ h1 {
 }
 
 .history-box {
-    width: 688px;
+    width: 720px;
     min-height: 180px;
     background: rgba(15, 23, 42, 0.82);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -220,6 +219,7 @@ h1 {
     object-fit: contain;
     user-select: none;
     filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.35));
+    animation: capturedPop 0.25s ease;
 }
 
 .move-history {
@@ -234,6 +234,25 @@ h1 {
     padding-right: 4px;
 }
 
+.history-row {
+    display: grid;
+    grid-template-columns: 50px 1fr 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.history-move-number {
+    color: #cbd5e1;
+    font-weight: bold;
+}
+
+.history-move {
+    color: #f8fafc;
+    word-break: break-word;
+}
+
 .move-history::-webkit-scrollbar {
     width: 8px;
 }
@@ -244,7 +263,7 @@ h1 {
 }
 
 .highlight {
-    box-shadow: inset 0 0 0 4px rgba(250, 204, 21, 0.95);
+    animation: moveBreathing 1.2s ease-in-out infinite;
 }
 
 .selected {
@@ -253,13 +272,14 @@ h1 {
 
 .active-turn {
     border-color: #c084fc;
-    box-shadow:
-        0 0 24px rgba(192, 132, 252, 0.35),
-        0 14px 28px rgba(0, 0, 0, 0.28);
-    transform: translateY(-2px);
+    animation: activePanelPulse 1.4s ease-in-out infinite;
 }
 
-.checkmate-modal {
+.king-in-check {
+    animation: kingCheckPulse 1s ease-in-out infinite;
+}
+
+.modal-overlay {
     position: fixed;
     inset: 0;
     background: rgba(0, 0, 0, 0.68);
@@ -269,7 +289,7 @@ h1 {
     z-index: 9999;
 }
 
-.checkmate-box {
+.modal-box {
     background: linear-gradient(135deg, #0f172a, #1e293b);
     color: white;
     padding: 35px 30px;
@@ -281,24 +301,24 @@ h1 {
     border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
-.checkmate-box h2 {
+.modal-box h2 {
     font-size: 34px;
     margin-bottom: 12px;
 }
 
-.checkmate-box p {
+.modal-box p {
     font-size: 20px;
     margin-bottom: 24px;
     color: #e2e8f0;
 }
 
-.checkmate-buttons {
+.modal-buttons {
     display: flex;
     justify-content: center;
     gap: 12px;
 }
 
-.checkmate-buttons button {
+.modal-buttons button {
     padding: 12px 20px;
     font-size: 15px;
     border: none;
@@ -310,8 +330,14 @@ h1 {
     transition: transform 0.2s ease;
 }
 
-.checkmate-buttons button:hover {
+.modal-buttons button:hover {
     transform: translateY(-2px);
+}
+
+.winner-icon {
+    font-size: 54px;
+    margin-bottom: 10px;
+    animation: winnerFloat 1.6s ease-in-out infinite;
 }
 
 .hidden {
@@ -322,6 +348,82 @@ h1 {
     0% {
         opacity: 0;
         transform: scale(0.75);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes moveBreathing {
+    0% {
+        box-shadow:
+            inset 0 0 0 3px rgba(250, 204, 21, 0.30),
+            0 0 8px rgba(250, 204, 21, 0.15);
+    }
+    50% {
+        box-shadow:
+            inset 0 0 0 6px rgba(250, 204, 21, 0.95),
+            0 0 18px rgba(250, 204, 21, 0.45);
+    }
+    100% {
+        box-shadow:
+            inset 0 0 0 3px rgba(250, 204, 21, 0.30),
+            0 0 8px rgba(250, 204, 21, 0.15);
+    }
+}
+
+@keyframes activePanelPulse {
+    0% {
+        box-shadow:
+            0 0 10px rgba(192, 132, 252, 0.20),
+            0 14px 28px rgba(0, 0, 0, 0.28);
+        transform: translateY(0);
+    }
+    50% {
+        box-shadow:
+            0 0 24px rgba(192, 132, 252, 0.42),
+            0 14px 28px rgba(0, 0, 0, 0.28);
+        transform: translateY(-2px);
+    }
+    100% {
+        box-shadow:
+            0 0 10px rgba(192, 132, 252, 0.20),
+            0 14px 28px rgba(0, 0, 0, 0.28);
+        transform: translateY(0);
+    }
+}
+
+@keyframes kingCheckPulse {
+    0% {
+        box-shadow: inset 0 0 0 3px rgba(239, 68, 68, 0.35);
+    }
+    50% {
+        box-shadow:
+            inset 0 0 0 5px rgba(239, 68, 68, 0.95),
+            0 0 18px rgba(239, 68, 68, 0.35);
+    }
+    100% {
+        box-shadow: inset 0 0 0 3px rgba(239, 68, 68, 0.35);
+    }
+}
+
+@keyframes winnerFloat {
+    0% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-6px);
+    }
+    100% {
+        transform: translateY(0);
+    }
+}
+
+@keyframes capturedPop {
+    0% {
+        opacity: 0;
+        transform: scale(0.4);
     }
     100% {
         opacity: 1;

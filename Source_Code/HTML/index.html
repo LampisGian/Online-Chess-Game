@@ -92,13 +92,27 @@
         </div>
     </div>
 
-    <div id="checkmate-modal" class="checkmate-modal hidden">
-        <div class="checkmate-box">
+    <!-- Checkmate Modal -->
+    <div id="checkmate-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <div class="winner-icon" id="winner-icon">♕</div>
             <h2 id="checkmate-title">Checkmate!</h2>
             <p id="checkmate-message">White wins the game.</p>
-            <div class="checkmate-buttons">
+            <div class="modal-buttons">
                 <button id="play-again-btn">Play Again</button>
                 <button id="modal-menu-btn">Main Menu</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restart Modal -->
+    <div id="restart-modal" class="modal-overlay hidden">
+        <div class="modal-box">
+            <h2>Restart Game?</h2>
+            <p>Your current progress will be lost.</p>
+            <div class="modal-buttons">
+                <button id="confirm-restart-btn">Yes</button>
+                <button id="cancel-restart-btn">Cancel</button>
             </div>
         </div>
     </div>
