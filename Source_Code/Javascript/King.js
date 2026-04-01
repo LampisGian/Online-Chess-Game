@@ -2,7 +2,9 @@ class King extends Piece {
     constructor(color, row, col) {
         super(color, row, col);
         this.name = "King";
-        this.symbol = color === "black" ? "♔" : "♚";
+         this.image = color === "white"
+            ? "../Assets/Images/White/King.png"
+            : "../Assets/Images/Black/King.png";
     }
 
     getValidMoves(game) {

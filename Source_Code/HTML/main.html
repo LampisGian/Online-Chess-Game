@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Chess Game - Main Menu</title>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+
+    <section class="main-screen">
+        <video autoplay muted loop playsinline class="bg-video">
+            <source src="../Assets/Video/Chess_Commercial.mp4" type="video/mp4">
+        </video>
+
+        <div class="overlay"></div>
+
+        <div class="main-content">
+            <h1 class="main-title">Online Chess Game</h1>
+
+            <button id="start-game-btn" class="start-btn">Start Game</button>
+
+            <div class="session-panel">
+                <h2>Current Session Wins</h2>
+
+                <div class="score-line">
+                    <span>White Wins</span>
+                    <span id="white-score">0</span>
+                </div>
+
+                <div class="score-line">
+                    <span>Black Wins</span>
+                    <span id="black-score">0</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="../javascript/main.js"></script>
+</body>
+</html>

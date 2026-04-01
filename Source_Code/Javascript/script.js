@@ -1,15 +1,42 @@
 const chessboard = document.getElementById("chessboard");
 const game = new Game();
+
 const restartBtn = document.getElementById("restart-btn");
+const mainMenuBtn = document.getElementById("main-menu-btn");
+const playAgainBtn = document.getElementById("play-again-btn");
+const modalMenuBtn = document.getElementById("modal-menu-btn");
+
 const capturedWhiteContainer = document.getElementById("captured-white");
 const capturedBlackContainer = document.getElementById("captured-black");
 const moveHistoryContainer = document.getElementById("move-history");
-const turnDisplay = document.getElementById("turn-display");
+
+const checkmateModal = document.getElementById("checkmate-modal");
+const checkmateTitle = document.getElementById("checkmate-title");
+const checkmateMessage = document.getElementById("checkmate-message");
+
+const whitePanel = document.getElementById("white-panel");
+const blackPanel = document.getElementById("black-panel");
 
 restartBtn.addEventListener("click", () => {
     game.resetGame();
+    checkmateModal.classList.add("hidden");
     clearHighlights();
     updateBoard();
+});
+
+playAgainBtn.addEventListener("click", () => {
+    checkmateModal.classList.add("hidden");
+    game.resetGame();
+    clearHighlights();
+    updateBoard();
+});
+
+mainMenuBtn.addEventListener("click", () => {
+    window.location.href = "main.html";
+});
+
+modalMenuBtn.addEventListener("click", () => {
+    window.location.href = "main.html";
 });
 
 function renderMoveHistory() {
@@ -22,13 +49,14 @@ function renderMoveHistory() {
     });
 }
 
-function renderTurn() {
+function renderTurnIndicator() {
+    whitePanel.classList.remove("active-turn");
+    blackPanel.classList.remove("active-turn");
+
     if (game.currentTurn === "white") {
-        turnDisplay.textContent = "White's Turn";
-        turnDisplay.style.color = "#f5f5f5";
+        whitePanel.classList.add("active-turn");
     } else {
-        turnDisplay.textContent = "Black's Turn";
-        turnDisplay.style.color = "#fca5a5";
+        blackPanel.classList.add("active-turn");
     }
 }
 
@@ -37,15 +65,19 @@ function renderCapturedPieces() {
     capturedBlackContainer.innerHTML = "";
 
     game.capturedWhitePieces.forEach(piece => {
-        const pieceElement = document.createElement("span");
-        pieceElement.textContent = piece.symbol;
-        capturedWhiteContainer.appendChild(pieceElement);
+        const img = document.createElement("img");
+        img.src = piece.image;
+        img.alt = piece.name;
+        img.classList.add("captured-piece-image");
+        capturedWhiteContainer.appendChild(img);
     });
 
     game.capturedBlackPieces.forEach(piece => {
-        const pieceElement = document.createElement("span");
-        pieceElement.textContent = piece.symbol;
-        capturedBlackContainer.appendChild(pieceElement);
+        const img = document.createElement("img");
+        img.src = piece.image;
+        img.alt = piece.name;
+        img.classList.add("captured-piece-image");
+        capturedBlackContainer.appendChild(img);
     });
 }
 
@@ -78,11 +110,15 @@ function renderPieces() {
     for (let row = 0; row < 8; row++) {
         for (let col = 0; col < 8; col++) {
             const square = document.getElementById(`square-${row}-${col}`);
-            square.textContent = "";
+            square.innerHTML = "";
 
             const piece = game.getPiece(row, col);
             if (piece) {
-                square.textContent = piece.symbol;
+                const img = document.createElement("img");
+                img.src = piece.image;
+                img.alt = piece.name;
+                img.classList.add("piece-image");
+                square.appendChild(img);
             }
         }
     }
@@ -105,8 +141,9 @@ function highlightMoves(moves) {
 function handleSquareClick(event) {
     if (game.gameOver) return;
 
-    const row = parseInt(event.target.dataset.row);
-    const col = parseInt(event.target.dataset.col);
+    const squareElement = event.currentTarget;
+    const row = parseInt(squareElement.dataset.row);
+    const col = parseInt(squareElement.dataset.col);
     const clickedPiece = game.getPiece(row, col);
 
     if (game.selectedPiece) {
@@ -120,12 +157,32 @@ function handleSquareClick(event) {
             game.selectedPiece = null;
             game.validMoves = [];
             game.switchTurn();
-            const opponent = game.currentTurn;
 
-            if (game.isCheckmate(opponent)) {
-                alert(`Checkmate! ${opponent} loses.`);
+            const currentPlayer = game.currentTurn;
+
+            if (game.isCheckmate(currentPlayer)) {
+                if (currentPlayer === "white") {
+                    checkmateTitle.textContent = "Checkmate!";
+                    checkmateMessage.textContent = "Black wins the game.";
+
+                    let blackWins = parseInt(sessionStorage.getItem("blackWins") || "0");
+                    blackWins++;
+                    sessionStorage.setItem("blackWins", blackWins);
+                } else {
+                    checkmateTitle.textContent = "Checkmate!";
+                    checkmateMessage.textContent = "White wins the game.";
+
+                    let whiteWins = parseInt(sessionStorage.getItem("whiteWins") || "0");
+                    whiteWins++;
+                    sessionStorage.setItem("whiteWins", whiteWins);
+                }
+
+                checkmateModal.classList.remove("hidden");
                 game.gameOver = true;
+                updateBoard();
+                return;
             }
+
             updateBoard();
             return;
         }
@@ -134,6 +191,7 @@ function handleSquareClick(event) {
     if (clickedPiece && clickedPiece.color === game.currentTurn) {
         game.selectedPiece = clickedPiece;
         game.validMoves = game.getLegalMoves(clickedPiece);
+
         clearHighlights();
         document.getElementById(`square-${row}-${col}`).classList.add("selected");
         highlightMoves(game.validMoves);
@@ -145,7 +203,7 @@ function updateBoard() {
     renderPieces();
     renderCapturedPieces();
     renderMoveHistory();
-    renderTurn();
+    renderTurnIndicator();
 }
 
 generateBoard();

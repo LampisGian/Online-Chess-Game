@@ -2,7 +2,9 @@ class Pawn extends Piece {
     constructor(color, row, col) {
         super(color, row, col);
         this.name = "Pawn";
-        this.symbol = color === "black" ? "♙" : "♟";
+        this.image = color === "white"
+            ? "../Assets/Images/White/Pawn.png"
+            : "../Assets/Images/Black/Pawn.png";
     }
 
     getValidMoves(game) {
