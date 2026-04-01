@@ -4,7 +4,7 @@ class Knight extends Piece
     {
         super(color, row, col);
         this.name = "Knight";
-        this.symbol = color === "white" ? "♘" : "♞";
+        this.symbol = color === "black" ? "♘" : "♞";
     }
 
     getValidMoves(board) 

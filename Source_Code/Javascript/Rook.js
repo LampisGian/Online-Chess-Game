@@ -2,7 +2,7 @@ class Rook extends Piece {
     constructor(color, row, col) {
         super(color, row, col);
         this.name = "Rook";
-        this.symbol = color === "white" ? "♖" : "♜";
+        this.symbol = color === "black" ? "♖" : "♜";
     }
 
     getValidMoves(game) {

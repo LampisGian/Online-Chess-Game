@@ -9,6 +9,7 @@ class Game
         this.gameOver = false;
         this.capturedWhitePieces = [];
         this.capturedBlackPieces = [];
+        this.moveHistory = [];
 
         this.initializePieces();
     }
@@ -102,10 +103,18 @@ class Game
         }
     }
 
+    if (!isSimulation) {
+        const from = this.positionToNotation(fromRow, fromCol);
+        const to = this.positionToNotation(toRow, toCol);
+        const action = targetPiece ? "x" : "→";
+
+        this.moveHistory.push(`${piece.color} ${piece.name}: ${from} ${action} ${to}`);
+    }
+
     this.board[toRow][toCol] = piece;
     this.board[fromRow][fromCol] = null;
     piece.setPosition(toRow, toCol);
-    }
+}
 
 
     switchTurn() 
@@ -236,10 +245,17 @@ class Game
     this.selectedPiece = null;
     this.validMoves = [];
     this.gameOver = false;
+    this.moveHistory = [];
 
     this.capturedWhitePieces = [];
     this.capturedBlackPieces = [];
 
     this.initializePieces();
     }
+
+    positionToNotation(row, col) {
+    const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
+    const rank = 8 - row;
+    return `${files[col]}${rank}`;
+}
 }

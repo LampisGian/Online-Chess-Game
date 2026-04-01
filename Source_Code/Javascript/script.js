@@ -3,12 +3,34 @@ const game = new Game();
 const restartBtn = document.getElementById("restart-btn");
 const capturedWhiteContainer = document.getElementById("captured-white");
 const capturedBlackContainer = document.getElementById("captured-black");
+const moveHistoryContainer = document.getElementById("move-history");
+const turnDisplay = document.getElementById("turn-display");
 
 restartBtn.addEventListener("click", () => {
     game.resetGame();
     clearHighlights();
     updateBoard();
 });
+
+function renderMoveHistory() {
+    moveHistoryContainer.innerHTML = "";
+
+    game.moveHistory.forEach((move, index) => {
+        const moveElement = document.createElement("div");
+        moveElement.textContent = `${index + 1}. ${move}`;
+        moveHistoryContainer.appendChild(moveElement);
+    });
+}
+
+function renderTurn() {
+    if (game.currentTurn === "white") {
+        turnDisplay.textContent = "White's Turn";
+        turnDisplay.style.color = "#f5f5f5";
+    } else {
+        turnDisplay.textContent = "Black's Turn";
+        turnDisplay.style.color = "#fca5a5";
+    }
+}
 
 function renderCapturedPieces() {
     capturedWhiteContainer.innerHTML = "";
@@ -122,6 +144,8 @@ function updateBoard() {
     clearHighlights();
     renderPieces();
     renderCapturedPieces();
+    renderMoveHistory();
+    renderTurn();
 }
 
 generateBoard();
