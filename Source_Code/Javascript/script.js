@@ -3,6 +3,7 @@ const game = new Game();
 
 const restartBtn = document.getElementById("restart-btn");
 const mainMenuBtn = document.getElementById("main-menu-btn");
+const muteBtn = document.getElementById("mute-btn");
 const playAgainBtn = document.getElementById("play-again-btn");
 const modalMenuBtn = document.getElementById("modal-menu-btn");
 
@@ -23,6 +24,48 @@ const winnerIcon = document.getElementById("winner-icon");
 const whitePanel = document.getElementById("white-panel");
 const blackPanel = document.getElementById("black-panel");
 
+const bgMusic = document.getElementById("bg-music");
+const moveSound = document.getElementById("move-sound");
+const captureSound = document.getElementById("capture-sound");
+const winSound = document.getElementById("win-sound");
+
+let isMusicMuted = false;
+let musicStarted = false;
+
+function playSound(audioElement) {
+    if (!audioElement) return;
+    audioElement.currentTime = 0;
+    audioElement.play().catch(() => {});
+}
+
+function startBackgroundMusic() {
+    if (!bgMusic || musicStarted || isMusicMuted) return;
+
+    bgMusic.volume = 0.25;
+    bgMusic.play()
+        .then(() => {
+            musicStarted = true;
+        })
+        .catch(() => {});
+}
+
+function updateMuteButton() {
+    if (!muteBtn) return;
+    muteBtn.textContent = isMusicMuted ? "Unmute Music" : "Mute Music";
+}
+
+function flashCaptureSquare(row, col) {
+    const square = document.getElementById(`square-${row}-${col}`);
+    if (!square) return;
+
+    square.classList.add("capture-flash");
+    setTimeout(() => {
+        square.classList.remove("capture-flash");
+    }, 280);
+}
+
+document.addEventListener("click", startBackgroundMusic, { once: true });
+
 restartBtn.addEventListener("click", () => {
     restartModal.classList.remove("hidden");
 });
@@ -33,6 +76,11 @@ confirmRestartBtn.addEventListener("click", () => {
     game.resetGame();
     clearHighlights();
     updateBoard();
+
+    if (bgMusic && !isMusicMuted) {
+        bgMusic.play().catch(() => {});
+        musicStarted = true;
+    }
 });
 
 cancelRestartBtn.addEventListener("click", () => {
@@ -44,6 +92,11 @@ playAgainBtn.addEventListener("click", () => {
     game.resetGame();
     clearHighlights();
     updateBoard();
+
+    if (bgMusic && !isMusicMuted) {
+        bgMusic.play().catch(() => {});
+        musicStarted = true;
+    }
 });
 
 mainMenuBtn.addEventListener("click", () => {
@@ -52,6 +105,21 @@ mainMenuBtn.addEventListener("click", () => {
 
 modalMenuBtn.addEventListener("click", () => {
     window.location.href = "main.html";
+});
+
+muteBtn.addEventListener("click", () => {
+    isMusicMuted = !isMusicMuted;
+
+    if (bgMusic) {
+        bgMusic.muted = isMusicMuted;
+
+        if (!isMusicMuted) {
+            bgMusic.play().catch(() => {});
+            musicStarted = true;
+        }
+    }
+
+    updateMuteButton();
 });
 
 function renderMoveHistory() {
@@ -208,7 +276,7 @@ function highlightMoves(moves) {
     }
 }
 
-function handleSquareClick(event) {
+async function handleSquareClick(event) {
     if (game.gameOver) return;
 
     const squareElement = event.currentTarget;
@@ -223,6 +291,20 @@ function handleSquareClick(event) {
         const isValidMove = validMoves.some(move => move.row === row && move.col === col);
 
         if (isValidMove) {
+            const targetPiece = game.getPiece(row, col);
+            const movingPieceImage = selected.image;
+
+            clearHighlights();
+
+            if (targetPiece) {
+                playSound(captureSound);
+                await animateCapturePiece(row, col, targetPiece.image);
+            } else {
+                playSound(moveSound);
+            }
+
+            await animateMovePiece(selected.row, selected.col, row, col, movingPieceImage);
+
             game.movePiece(selected.row, selected.col, row, col);
             game.selectedPiece = null;
             game.validMoves = [];
@@ -247,6 +329,12 @@ function handleSquareClick(event) {
                     let whiteWins = parseInt(sessionStorage.getItem("whiteWins") || "0");
                     whiteWins++;
                     sessionStorage.setItem("whiteWins", whiteWins);
+                }
+
+                playSound(winSound);
+
+                if (bgMusic) {
+                    bgMusic.pause();
                 }
 
                 checkmateModal.classList.remove("hidden");
@@ -279,5 +367,58 @@ function updateBoard() {
     renderCheckState();
 }
 
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function animateMovePiece(fromRow, fromCol, toRow, toCol, pieceImageSrc) {
+    const fromSquare = document.getElementById(`square-${fromRow}-${fromCol}`);
+    const toSquare = document.getElementById(`square-${toRow}-${toCol}`);
+
+    if (!fromSquare || !toSquare || !pieceImageSrc) return;
+
+    const fromRect = fromSquare.getBoundingClientRect();
+    const toRect = toSquare.getBoundingClientRect();
+
+    const flyingPiece = document.createElement("img");
+    flyingPiece.src = pieceImageSrc;
+    flyingPiece.classList.add("flying-piece");
+
+    flyingPiece.style.left = `${fromRect.left + (fromRect.width - 76) / 2}px`;
+    flyingPiece.style.top = `${fromRect.top + (fromRect.height - 76) / 2}px`;
+
+    document.body.appendChild(flyingPiece);
+
+    await wait(10);
+
+    flyingPiece.style.transition = "left 0.22s ease, top 0.22s ease, transform 0.22s ease";
+    flyingPiece.style.left = `${toRect.left + (toRect.width - 76) / 2}px`;
+    flyingPiece.style.top = `${toRect.top + (toRect.height - 76) / 2}px`;
+    flyingPiece.style.transform = "scale(1.04)";
+
+    await wait(230);
+    flyingPiece.remove();
+}
+
+async function animateCapturePiece(row, col, pieceImageSrc) {
+    const targetSquare = document.getElementById(`square-${row}-${col}`);
+    if (!targetSquare || !pieceImageSrc) return;
+
+    const rect = targetSquare.getBoundingClientRect();
+
+    const capturedPiece = document.createElement("img");
+    capturedPiece.src = pieceImageSrc;
+    capturedPiece.classList.add("captured-fade");
+
+    capturedPiece.style.left = `${rect.left + (rect.width - 76) / 2}px`;
+    capturedPiece.style.top = `${rect.top + (rect.height - 76) / 2}px`;
+
+    document.body.appendChild(capturedPiece);
+
+    await wait(290);
+    capturedPiece.remove();
+}
+
+updateMuteButton();
 generateBoard();
 updateBoard();

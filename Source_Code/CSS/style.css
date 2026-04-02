@@ -430,3 +430,35 @@ h1 {
         transform: scale(1);
     }
 }
+
+.flying-piece {
+    position: fixed;
+    width: 76px;
+    height: 76px;
+    pointer-events: none;
+    z-index: 10000;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+}
+
+.captured-fade {
+    position: fixed;
+    width: 76px;
+    height: 76px;
+    pointer-events: none;
+    z-index: 9999;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+    animation: capturedDisappear 0.28s ease forwards;
+}
+
+@keyframes capturedDisappear {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.45);
+    }
+}

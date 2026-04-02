@@ -14,6 +14,7 @@
         <div class="top-buttons">
             <button id="restart-btn">Restart Game</button>
             <button id="main-menu-btn">Main Menu</button>
+            <button id="mute-btn">Mute Music</button>
         </div>
 
         <div class="top-layout">
@@ -116,6 +117,12 @@
             </div>
         </div>
     </div>
+
+
+    <audio id="bg-music" src="../Assets/Sounds/background.mp3" loop></audio>
+    <audio id="move-sound" src="../Assets/Sounds/move.mp3" preload="auto"></audio>
+    <audio id="capture-sound" src="../Assets/Sounds/capture.mp3" preload="auto"></audio>
+    <audio id="win-sound" src="../Assets/Sounds/win.mp3" preload="auto"></audio>
 
     <script src="../javascript/Piece.js"></script>
     <script src="../javascript/King.js"></script>
