@@ -166,6 +166,7 @@ h1 {
     user-select: none;
     filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35));
     transition: transform 0.18s ease, filter 0.18s ease;
+    animation: pieceAppear 0.18s ease;
 }
 
 .square:hover .piece-image {
@@ -279,6 +280,10 @@ h1 {
     animation: kingCheckPulse 1s ease-in-out infinite;
 }
 
+.capture-flash {
+    animation: captureFlash 0.28s ease;
+}
+
 .modal-overlay {
     position: fixed;
     inset: 0;
@@ -344,10 +349,42 @@ h1 {
     display: none;
 }
 
+.flying-piece {
+    position: fixed;
+    width: 76px;
+    height: 76px;
+    pointer-events: none;
+    z-index: 10000;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+}
+
+.captured-fade {
+    position: fixed;
+    width: 76px;
+    height: 76px;
+    pointer-events: none;
+    z-index: 9999;
+    object-fit: contain;
+    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
+    animation: capturedDisappear 0.28s ease forwards;
+}
+
 @keyframes popIn {
     0% {
         opacity: 0;
         transform: scale(0.75);
+    }
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+@keyframes pieceAppear {
+    0% {
+        opacity: 0.55;
+        transform: scale(0.88);
     }
     100% {
         opacity: 1;
@@ -431,27 +468,6 @@ h1 {
     }
 }
 
-.flying-piece {
-    position: fixed;
-    width: 76px;
-    height: 76px;
-    pointer-events: none;
-    z-index: 10000;
-    object-fit: contain;
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
-}
-
-.captured-fade {
-    position: fixed;
-    width: 76px;
-    height: 76px;
-    pointer-events: none;
-    z-index: 9999;
-    object-fit: contain;
-    filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.35));
-    animation: capturedDisappear 0.28s ease forwards;
-}
-
 @keyframes capturedDisappear {
     0% {
         opacity: 1;
@@ -461,4 +477,32 @@ h1 {
         opacity: 0;
         transform: scale(0.45);
     }
+}
+
+@keyframes captureFlash {
+    0% {
+        box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+    50% {
+        box-shadow: inset 0 0 0 8px rgba(239, 68, 68, 0.9);
+    }
+    100% {
+        box-shadow: inset 0 0 0 0 rgba(239, 68, 68, 0);
+    }
+}
+
+.square[draggable="true"] {
+    cursor: pointer;
+}
+
+.square[draggable="true"] .piece-image {
+    cursor: grab;
+}
+
+.square[draggable="true"] .piece-image:active {
+    cursor: grabbing;
+}
+
+.square.dragging {
+    opacity: 0.55;
 }

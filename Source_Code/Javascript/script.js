@@ -32,6 +32,15 @@ const winSound = document.getElementById("win-sound");
 let isMusicMuted = false;
 let musicStarted = false;
 
+let draggedPiece = null;
+let draggedFromRow = null;
+let draggedFromCol = null;
+let currentDragImage = null;
+
+function wait(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 function playSound(audioElement) {
     if (!audioElement) return;
     audioElement.currentTime = 0;
@@ -62,6 +71,54 @@ function flashCaptureSquare(row, col) {
     setTimeout(() => {
         square.classList.remove("capture-flash");
     }, 280);
+}
+
+async function animateMovePiece(fromRow, fromCol, toRow, toCol, pieceImageSrc) {
+    const fromSquare = document.getElementById(`square-${fromRow}-${fromCol}`);
+    const toSquare = document.getElementById(`square-${toRow}-${toCol}`);
+
+    if (!fromSquare || !toSquare || !pieceImageSrc) return;
+
+    const fromRect = fromSquare.getBoundingClientRect();
+    const toRect = toSquare.getBoundingClientRect();
+
+    const flyingPiece = document.createElement("img");
+    flyingPiece.src = pieceImageSrc;
+    flyingPiece.classList.add("flying-piece");
+
+    flyingPiece.style.left = `${fromRect.left + (fromRect.width - 76) / 2}px`;
+    flyingPiece.style.top = `${fromRect.top + (fromRect.height - 76) / 2}px`;
+
+    document.body.appendChild(flyingPiece);
+
+    await wait(10);
+
+    flyingPiece.style.transition = "left 0.22s ease, top 0.22s ease, transform 0.22s ease";
+    flyingPiece.style.left = `${toRect.left + (toRect.width - 76) / 2}px`;
+    flyingPiece.style.top = `${toRect.top + (toRect.height - 76) / 2}px`;
+    flyingPiece.style.transform = "scale(1.04)";
+
+    await wait(230);
+    flyingPiece.remove();
+}
+
+async function animateCapturePiece(row, col, pieceImageSrc) {
+    const targetSquare = document.getElementById(`square-${row}-${col}`);
+    if (!targetSquare || !pieceImageSrc) return;
+
+    const rect = targetSquare.getBoundingClientRect();
+
+    const capturedPiece = document.createElement("img");
+    capturedPiece.src = pieceImageSrc;
+    capturedPiece.classList.add("captured-fade");
+
+    capturedPiece.style.left = `${rect.left + (rect.width - 76) / 2}px`;
+    capturedPiece.style.top = `${rect.top + (rect.height - 76) / 2}px`;
+
+    document.body.appendChild(capturedPiece);
+
+    await wait(290);
+    capturedPiece.remove();
 }
 
 document.addEventListener("click", startBackgroundMusic, { once: true });
@@ -212,6 +269,10 @@ function generateBoard() {
             square.id = `square-${row}-${col}`;
 
             square.addEventListener("click", handleSquareClick);
+            square.addEventListener("dragstart", handleDragStart);
+            square.addEventListener("dragover", handleDragOver);
+            square.addEventListener("drop", handleDrop);
+            square.addEventListener("dragend", handleDragEnd);
 
             chessboard.appendChild(square);
         }
@@ -223,14 +284,20 @@ function renderPieces() {
         for (let col = 0; col < 8; col++) {
             const square = document.getElementById(`square-${row}-${col}`);
             square.innerHTML = "";
+            square.draggable = false;
 
             const piece = game.getPiece(row, col);
             if (piece) {
+                if (piece.color === game.currentTurn && !game.gameOver) {
+                    square.draggable = true;
+                }
+
                 if (piece.image) {
                     const img = document.createElement("img");
                     img.src = piece.image;
                     img.alt = piece.name;
                     img.classList.add("piece-image");
+                    img.draggable = false;
                     square.appendChild(img);
                 } else {
                     square.textContent = piece.symbol;
@@ -276,6 +343,186 @@ function highlightMoves(moves) {
     }
 }
 
+function handleDragStart(event) {
+    const square = event.currentTarget;
+    const row = parseInt(square.dataset.row);
+    const col = parseInt(square.dataset.col);
+    const piece = game.getPiece(row, col);
+
+    if (!piece || game.gameOver || piece.color !== game.currentTurn) {
+        event.preventDefault();
+        return;
+    }
+
+    draggedPiece = piece;
+    draggedFromRow = row;
+    draggedFromCol = col;
+
+    game.selectedPiece = piece;
+    game.validMoves = game.getLegalMoves(piece);
+
+    clearHighlights();
+    square.classList.add("selected");
+    square.classList.add("dragging");
+    highlightMoves(game.validMoves);
+
+    event.dataTransfer.effectAllowed = "move";
+    event.dataTransfer.setData("text/plain", `${row},${col}`);
+
+    if (piece.image) {
+        currentDragImage = document.createElement("img");
+        currentDragImage.src = piece.image;
+        currentDragImage.style.width = "76px";
+        currentDragImage.style.height = "76px";
+        currentDragImage.style.position = "fixed";
+        currentDragImage.style.top = "0";
+        currentDragImage.style.left = "0";
+        currentDragImage.style.opacity = "1";
+        currentDragImage.style.pointerEvents = "none";
+        currentDragImage.style.zIndex = "-1";
+
+        document.body.appendChild(currentDragImage);
+        event.dataTransfer.setDragImage(currentDragImage, 38, 38);
+    }
+}
+
+function handleDragEnd(event) {
+    const square = event.currentTarget;
+    square.classList.remove("dragging");
+
+    if (currentDragImage) {
+        currentDragImage.remove();
+        currentDragImage = null;
+    }
+
+    draggedPiece = null;
+    draggedFromRow = null;
+    draggedFromCol = null;
+}
+
+function handleDragOver(event) {
+    event.preventDefault();
+    if (event.dataTransfer) {
+        event.dataTransfer.dropEffect = "move";
+    }
+}
+
+async function executeMove(fromRow, fromCol, toRow, toCol) {
+    const selected = game.getPiece(fromRow, fromCol);
+    if (!selected) return;
+
+    const targetPiece = game.getPiece(toRow, toCol);
+    const movingPieceImage = selected.image;
+
+    clearHighlights();
+
+    if (targetPiece) {
+        playSound(captureSound);
+        flashCaptureSquare(toRow, toCol);
+        await animateCapturePiece(toRow, toCol, targetPiece.image);
+    } else {
+        playSound(moveSound);
+    }
+
+    await animateMovePiece(fromRow, fromCol, toRow, toCol, movingPieceImage);
+
+    game.movePiece(fromRow, fromCol, toRow, toCol);
+    game.selectedPiece = null;
+    game.validMoves = [];
+    game.switchTurn();
+
+    draggedPiece = null;
+    draggedFromRow = null;
+    draggedFromCol = null;
+
+    const currentPlayer = game.currentTurn;
+
+    if (game.isCheckmate(currentPlayer)) {
+        if (currentPlayer === "white") {
+            checkmateTitle.textContent = "Checkmate!";
+            checkmateMessage.textContent = "Black wins the game.";
+            winnerIcon.textContent = "♛";
+
+            let blackWins = parseInt(sessionStorage.getItem("blackWins") || "0");
+            blackWins++;
+            sessionStorage.setItem("blackWins", blackWins);
+        } else {
+            checkmateTitle.textContent = "Checkmate!";
+            checkmateMessage.textContent = "White wins the game.";
+            winnerIcon.textContent = "♕";
+
+            let whiteWins = parseInt(sessionStorage.getItem("whiteWins") || "0");
+            whiteWins++;
+            sessionStorage.setItem("whiteWins", whiteWins);
+        }
+
+        playSound(winSound);
+
+        if (bgMusic) {
+            bgMusic.pause();
+        }
+
+        checkmateModal.classList.remove("hidden");
+        game.gameOver = true;
+        updateBoard();
+        return;
+    }
+
+    updateBoard();
+}
+
+async function handleDrop(event) {
+    event.preventDefault();
+
+    if (game.gameOver) return;
+
+    const targetSquare = event.currentTarget;
+    const toRow = parseInt(targetSquare.dataset.row);
+    const toCol = parseInt(targetSquare.dataset.col);
+
+    let fromRow = draggedFromRow;
+    let fromCol = draggedFromCol;
+
+    if ((fromRow === null || fromCol === null) && event.dataTransfer) {
+        const raw = event.dataTransfer.getData("text/plain");
+        if (raw) {
+            const [r, c] = raw.split(",");
+            fromRow = parseInt(r);
+            fromCol = parseInt(c);
+        }
+    }
+
+    if (fromRow === null || fromCol === null) {
+        clearHighlights();
+        game.selectedPiece = null;
+        game.validMoves = [];
+        return;
+    }
+
+    const piece = game.getPiece(fromRow, fromCol);
+    if (!piece) {
+        clearHighlights();
+        game.selectedPiece = null;
+        game.validMoves = [];
+        return;
+    }
+
+    const legalMoves = game.getLegalMoves(piece);
+    const isValidMove = legalMoves.some(move => move.row === toRow && move.col === toCol);
+
+    if (!isValidMove) {
+        clearHighlights();
+        game.selectedPiece = null;
+        game.validMoves = [];
+        draggedPiece = null;
+        draggedFromRow = null;
+        draggedFromCol = null;
+        return;
+    }
+
+    await executeMove(fromRow, fromCol, toRow, toCol);
+}
+
 async function handleSquareClick(event) {
     if (game.gameOver) return;
 
@@ -291,59 +538,7 @@ async function handleSquareClick(event) {
         const isValidMove = validMoves.some(move => move.row === row && move.col === col);
 
         if (isValidMove) {
-            const targetPiece = game.getPiece(row, col);
-            const movingPieceImage = selected.image;
-
-            clearHighlights();
-
-            if (targetPiece) {
-                playSound(captureSound);
-                await animateCapturePiece(row, col, targetPiece.image);
-            } else {
-                playSound(moveSound);
-            }
-
-            await animateMovePiece(selected.row, selected.col, row, col, movingPieceImage);
-
-            game.movePiece(selected.row, selected.col, row, col);
-            game.selectedPiece = null;
-            game.validMoves = [];
-            game.switchTurn();
-
-            const currentPlayer = game.currentTurn;
-
-            if (game.isCheckmate(currentPlayer)) {
-                if (currentPlayer === "white") {
-                    checkmateTitle.textContent = "Checkmate!";
-                    checkmateMessage.textContent = "Black wins the game.";
-                    winnerIcon.textContent = "♛";
-
-                    let blackWins = parseInt(sessionStorage.getItem("blackWins") || "0");
-                    blackWins++;
-                    sessionStorage.setItem("blackWins", blackWins);
-                } else {
-                    checkmateTitle.textContent = "Checkmate!";
-                    checkmateMessage.textContent = "White wins the game.";
-                    winnerIcon.textContent = "♕";
-
-                    let whiteWins = parseInt(sessionStorage.getItem("whiteWins") || "0");
-                    whiteWins++;
-                    sessionStorage.setItem("whiteWins", whiteWins);
-                }
-
-                playSound(winSound);
-
-                if (bgMusic) {
-                    bgMusic.pause();
-                }
-
-                checkmateModal.classList.remove("hidden");
-                game.gameOver = true;
-                updateBoard();
-                return;
-            }
-
-            updateBoard();
+            await executeMove(selected.row, selected.col, row, col);
             return;
         }
     }
@@ -365,58 +560,6 @@ function updateBoard() {
     renderMoveHistory();
     renderTurnIndicator();
     renderCheckState();
-}
-
-function wait(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-async function animateMovePiece(fromRow, fromCol, toRow, toCol, pieceImageSrc) {
-    const fromSquare = document.getElementById(`square-${fromRow}-${fromCol}`);
-    const toSquare = document.getElementById(`square-${toRow}-${toCol}`);
-
-    if (!fromSquare || !toSquare || !pieceImageSrc) return;
-
-    const fromRect = fromSquare.getBoundingClientRect();
-    const toRect = toSquare.getBoundingClientRect();
-
-    const flyingPiece = document.createElement("img");
-    flyingPiece.src = pieceImageSrc;
-    flyingPiece.classList.add("flying-piece");
-
-    flyingPiece.style.left = `${fromRect.left + (fromRect.width - 76) / 2}px`;
-    flyingPiece.style.top = `${fromRect.top + (fromRect.height - 76) / 2}px`;
-
-    document.body.appendChild(flyingPiece);
-
-    await wait(10);
-
-    flyingPiece.style.transition = "left 0.22s ease, top 0.22s ease, transform 0.22s ease";
-    flyingPiece.style.left = `${toRect.left + (toRect.width - 76) / 2}px`;
-    flyingPiece.style.top = `${toRect.top + (toRect.height - 76) / 2}px`;
-    flyingPiece.style.transform = "scale(1.04)";
-
-    await wait(230);
-    flyingPiece.remove();
-}
-
-async function animateCapturePiece(row, col, pieceImageSrc) {
-    const targetSquare = document.getElementById(`square-${row}-${col}`);
-    if (!targetSquare || !pieceImageSrc) return;
-
-    const rect = targetSquare.getBoundingClientRect();
-
-    const capturedPiece = document.createElement("img");
-    capturedPiece.src = pieceImageSrc;
-    capturedPiece.classList.add("captured-fade");
-
-    capturedPiece.style.left = `${rect.left + (rect.width - 76) / 2}px`;
-    capturedPiece.style.top = `${rect.top + (rect.height - 76) / 2}px`;
-
-    document.body.appendChild(capturedPiece);
-
-    await wait(290);
-    capturedPiece.remove();
 }
 
 updateMuteButton();
