@@ -1,32 +1,58 @@
 # Online chess game
 
 ## Description
-This project consists of building an online chess game using HTML, CSS, and JavaScript. The goal is to create an interactive 2-player chess game that works in the browser, using only local technologies — no servers are required. Players should be able to move pieces according to chess rules, restart games, and track whose turn it is.
+This project is a browser-based online chess game developed using **HTML, CSS, and JavaScript**. The objective is to create an interactive 2-player chess application that runs entirely on the client side, without requiring any backend server or database.
 
-The chess board will be generated dynamically with JavaScript, and all the logic — including legal move detection, check/checkmate logic, turn switching, and move history — must be implemented in JavaScript. The game runs completely in the browser and does not require any backend.
+The chess board is generated dynamically with JavaScript, and the full game logic is implemented in the browser. This includes legal move validation for all pieces, turn switching, check and checkmate detection, illegal move prevention, captured pieces tracking, move history recording, restart functionality, and drag-and-drop support.
+
+The project follows an object-oriented design, with separate classes for the chess pieces and the main game controller, in order to keep the code modular, organized, and easier to maintain. In addition, the interface includes visual improvements such as highlighted legal moves, animated interactions, modal dialogs, and sound effects to provide a more complete and user-friendly gameplay experience.
 
 ## Getting Started
-1. Clone this repository or download the files.
-2. Install required packages if necessary.
+1. Clone this repository or download the project files.
+2. Open the project folder in **VS Code** or another code editor.
+3. Run the project locally in a browser.
+   - You can open `main.html` directly, or
+   - use a local server such as:
+     ```bash
+     python -m http.server 8000
+     ```
+4. If using a local server, open:
+   ```text
+   http://localhost:8000/html/main.html
+   ```
+5. From the main menu, press Start Game to load the chess board and begin playing.
 
-Keep in mind that the code must be written in OOP.
+A quick checkmate technique for a fast win is the following:
 
-## Tasks
-- Set up the HTML/CSS structure for an 8x8 chess board.
-- Dynamically generate the board using JavaScript.
-- Define chess piece classes (e.g. King, Queen, Rook, etc.).
-- Implement logic for:
-	Valid moves per piece
-	Turn switching
-	Check and checkmate detection
-	Illegal move prevention
-- Allow restart/reset of the game.
-- Show captured pieces.
-- Implement a move history panel.
-- Display which player's turn it is.
-- Style the board and pieces using CSS or image assets.
-- Highlight legal moves when a piece is selected.
-- Allow dragging and dropping pieces (drag & drop API).
-- Final testing. Create README with instructions and screenshots. Submit as Git repo.
+1. **White:** `f2 -> f3`
+2. **Black:** `e7 -> e5`
+3. **White:** `g2 -> g4`
+4. **Black:** `Qd8 -> h4`
 
-## Estimated time to work 2 weeks
+This sequence results in a quick checkmate against White.
+
+## User Interface Overview
+
+The application is divided into two main screens: the **main screen** and the **game screen**.
+
+### Main Screen
+
+![Screenshot](Screenshots/main_screen.png)
+
+The main screen is the starting menu of the application. It contains the game title, a **Start Game** button, and a session score panel. The Start Game button is used to enter the chess board and begin a new match. The session score panel displays the number of wins achieved by the white and black player during the current session. A background video is also included to improve the visual presentation of the menu.
+
+### Game Screen
+
+![Screenshot](Screenshots/game_screen.png)
+
+The game screen is the main area where the match takes place. At the center of the screen there is the **chess board**, which displays all pieces and allows the player to interact with them either by clicking or by using drag and drop. Around the board there are coordinate labels with letters and numbers, so that positions can be recognized more easily using standard chess notation.
+
+On the left side there is the **White Captured panel**, which shows the white pieces that have been captured during the game. On the right side there is the **Black Captured panel**, which shows the black pieces that have been captured. These panels also help indicate whose turn it is, since the active side is visually highlighted.
+
+Below the board there is the **Move History panel**, which records the moves made during the match in chronological order. This allows the player to follow the progression of the game more clearly.
+
+At the top of the game screen there is a **control button area**. It includes the Restart Game button, which resets the current match, the Main Menu button, which returns the user to the starting screen, and the Mute Music button, which controls the background audio.
+
+In addition, the game screen includes visual feedback features such as highlighted legal moves, check indication, move and capture animations, and a victory modal that appears when the game ends in checkmate.
+
+![Screenshot](Screenshots/Checkmate.png)
