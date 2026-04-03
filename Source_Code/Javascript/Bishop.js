@@ -1,3 +1,4 @@
+//This class represents the Bishop piece in the chess game, it extends the Piece class and defines its specific movement patterns and image representation based on its color.
 class Bishop extends Piece {
     constructor(color, row, col) {
         super(color, row, col);

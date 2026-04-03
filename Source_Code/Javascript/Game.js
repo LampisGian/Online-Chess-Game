@@ -1,3 +1,4 @@
+//This class represents the main game logic for the chess game, it manages the game state, the board, the pieces, and the rules of the game such as checking for check and checkmate, switching turns, and handling piece movements and captures.
 class Game 
 {
     constructor() 
@@ -32,7 +33,6 @@ class Game
 
     initializePieces() 
     {
-        // Black pieces
         this.board[0][0] = new Rook("black", 0, 0);
         this.board[0][1] = new Knight("black", 0, 1);
         this.board[0][2] = new Bishop("black", 0, 2);
@@ -46,8 +46,6 @@ class Game
         {
             this.board[1][col] = new Pawn("black", 1, col);
         }
-
-        // White pieces
         this.board[7][0] = new Rook("white", 7, 0);
         this.board[7][1] = new Knight("white", 7, 1);
         this.board[7][2] = new Bishop("white", 7, 2);

@@ -1,4 +1,4 @@
-class Knight extends Piece 
+//This class represents the Knight piece in the chess game, it extends the Piece class and defines its specific movement patterns and image representation based on its color.
 {
     constructor(color, row, col) 
     {

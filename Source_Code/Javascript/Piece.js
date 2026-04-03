@@ -1,3 +1,4 @@
+//This class represents a generic chess piece, it serves as a base class for all specific piece types (Pawn, Rook, Knight, Bishop, Queen, King) and defines common properties and methods such as position, color, and movement logic that can be shared and overridden by the specific piece classes.
 class Piece {
     constructor(color, row, col) {
         this.color = color;

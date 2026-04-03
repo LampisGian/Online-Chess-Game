@@ -1,3 +1,7 @@
+//This file manages the main game interface and interactions for the chess game, it handles rendering the chessboard, pieces, move history, captured pieces, and turn indicators. 
+//It also manages user interactions such as clicking and dragging pieces to make moves, as well as playing sounds and animations for moves and captures. The file interacts with the Game class to update 
+//the game state and reflect changes on the UI accordingly.
+
 const chessboard = document.getElementById("chessboard");
 const game = new Game();
 
